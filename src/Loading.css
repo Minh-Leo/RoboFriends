@@ -1,0 +1,17 @@
+.loading {
+  width: 120px;
+  height: 120px;
+  border: 5px solid rgba(25, 146, 161, 0.6);
+  border-top: 5px solid rgb(0, 86, 143);
+  border-radius: 50%;
+  animation: rota 1s infinite;
+}
+
+@keyframes rota {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
