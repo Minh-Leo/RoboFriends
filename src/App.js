@@ -1,51 +1,54 @@
 import React from "react";
-import axios from "axios";
-import CardGroup from "./CardGroup";
-import SearchBox from "./SearchBox";
-import Loading from "./Loading";
-import Scroll from "./Scroll";
+import {connect} from "react-redux";
+import CardGroup from "./components/CardGroup";
+import SearchBox from "./components/SearchBox";
+import Loading from "./components/Loading";
+import Scroll from "./components/Scroll";
+import ErrorBoundry from "./components/ErrorBoundry";
 
-class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      robots: [],
-      searchField: "",
-      loading: true
-    };
-  }
+import {setSearchField, requestRobots} from "./actions";
 
-  componentDidMount() {
-    axios
-      .get("https://jsonplaceholder.typicode.com/users")
-      // .then(res => res.json())
-      .then(res => {
-        console.log(res.data);
-        this.setState({robots: res.data, loading: false});
-      });
-  }
-
-  onSearchChange = e => {
-    this.setState({searchField: e.target.value});
+// Map to Props
+const mapStateToProps = state => {
+  return {
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error
   };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    onSearchChange: e => dispatch(setSearchField(e.target.value)),
+    onRequestRobots: () => requestRobots(dispatch)
+  };
+};
+
+//
+//
+class App extends React.Component {
+  componentDidMount() {
+    this.props.onRequestRobots();
+  }
 
   render() {
-    const filteredRobots = this.state.robots.filter(robot => {
-      return robot.name
-        .toLowerCase()
-        .includes(this.state.searchField.toLowerCase());
+    const {searchField, onSearchChange, robots, isPending} = this.props;
+    const filteredRobots = robots.filter(robot => {
+      return robot.name.toLowerCase().includes(searchField.toLowerCase());
     });
 
     return (
       <div className='tc'>
-        {this.state.loading ? (
+        {isPending ? (
           <Loading className='pa6' />
         ) : (
           <>
             <h1 className='f2'>Robot Friends</h1>
-            <SearchBox onChange={this.onSearchChange} />
+            <SearchBox onChange={onSearchChange} />
             <Scroll>
-              <CardGroup robots={filteredRobots} />
+              <ErrorBoundry>
+                <CardGroup robots={filteredRobots} />
+              </ErrorBoundry>
             </Scroll>
           </>
         )}
@@ -54,4 +57,7 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
